@@ -76,10 +76,10 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',  # PostGIS database engine
         'NAME': 'heritage_db',  # Your PostGIS database name
-        'HOST': 'db',  # Container name for your PostgreSQL/PostGIS database
+        'HOST': 'localhost',  # Container name for your PostgreSQL/PostGIS database
         'USER': 'c21379843',  # Database user
         'PASSWORD': 'cece123',  # Database password
-        'PORT': 5432,  # Port for PostgreSQL
+        'PORT': '',  # Port for PostgreSQL
     }
 }
 
