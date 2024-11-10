@@ -24,7 +24,7 @@ SECRET_KEY = 'django-insecure-0*08=n!g!7nj3i+$&5&&pd5hlmh(2i40qxijy)^c6t9n4@1qs4
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True  # Set to False in production
 
-ALLOWED_HOSTS = ['13.48.100.18','localhost']  # Modify for production (e.g., ['yourdomain.com'])
+ALLOWED_HOSTS = ['13.48.100.18','heritagesites.xyz']  # Modify for production (e.g., ['yourdomain.com'])
 
 # Application definition
 INSTALLED_APPS = [
