@@ -13,19 +13,26 @@ class Command(BaseCommand):
         # Path to the CSV file
         csv_path = os.path.join(settings.BASE_DIR, 'heritage_sites', 'data', 'whc-sites-2021.csv')
 
-        for row in reader:
-            try:
-                latitude = float(row['latitude'])
-                longitude = float(row['longitude'])
-                print(f"Latitude: {latitude}, Longitude: {longitude}")  # Debug print
-                
-                # Only create if latitude and longitude are valid
-                HeritageSite.objects.create(
-                    name=row['name_en'],
-                    description=row['short_description_en'],
-                    latitude=latitude,
-                    longitude=longitude,
-                    location=Point(longitude, latitude)  # Longitude first, then latitude
-                )
-            except ValueError as e:
-                print(f"Skipping row due to error: {e}")  # Handle any parsing errors
+        # Open the CSV file and create the reader object
+        with open(csv_path, mode='r', encoding='utf-8') as file:
+            reader = csv.DictReader(file)  # Initialize reader here
+
+            for row in reader:
+                try:
+                    # Convert latitude and longitude to floats
+                    latitude = float(row['latitude'])
+                    longitude = float(row['longitude'])
+                    print(f"Latitude: {latitude}, Longitude: {longitude}")  # Debug print
+                    
+                    # Create HeritageSite object with location data
+                    HeritageSite.objects.create(
+                        name=row['name_en'],
+                        description=row['short_description_en'],
+                        latitude=latitude,
+                        longitude=longitude,
+                        location=Point(longitude, latitude)  # Longitude first, then latitude
+                    )
+                except ValueError as e:
+                    print(f"Skipping row due to error: {e}")  # Handle any parsing errors
+                except KeyError as e:
+                    print(f"Missing key in row: {e}")  # Handle missing columns
