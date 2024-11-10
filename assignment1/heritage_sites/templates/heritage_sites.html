@@ -4,106 +4,88 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nearby Heritage Sites</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" />
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css" />
+
     <style>
         body {
             font-family: 'Arial', sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f9fafb;
+            background-color: #ffffff;
             color: #333;
             display: flex;
             flex-direction: column;
-            height: 100vh;
-        }
-
-        /* Top toolbar styling */
-        .toolbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 20px;
-            background-color: #fff;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            z-index: 1000;
-        }
-
-        /* Button styling */
-        .map-btn {
-            background-color: #007bff;
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            font-size: 14px;
-            font-weight: bold;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-
-        /* Button hover effect */
-        .map-btn:hover { 
-            background-color: #0056b3; 
-        }
-
-        /* Color for specific buttons */
-        #find-nearest-btn { background-color: #28a745; }
-        #find-nearest-btn:hover { background-color: #1e7e34; }
-        #logout-btn { background-color: #dc3545; }
-        #logout-btn:hover { background-color: #c82333; }
-
-        /* Search box styling */
-        #search-box {
-            padding: 8px;
-            font-size: 14px;
-            border-radius: 4px;
-            border: 1px solid #ccc;
-            width: 250px;
-            transition: box-shadow 0.2s ease;
-        }
-
-        #search-box:focus {
-            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
-            outline: none;
-        }
-
-        /* Centered text section */
-        h1, p {
-            text-align: center;
-            margin: 10px;
-            color: #007bff;
+            min-height: 100vh;
         }
 
         #map {
-            flex: 1;
-            width: 100%;
-            height: calc(100vh - 120px);
+        flex: 1;
+        width: calc(100% - 20px); /* Subtracting 20px to leave space on both sides */
+        height: calc(100vh - 120px); /* Adjust the height according to your layout */
+        margin: 10px; /* 10px margin from the edges of the screen */
+        border-radius: 15px; /* Curved corners */
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Optional: Adds a shadow around the map */
+    }
+
+        h1 {
+            color: #333;
+            font-size: 1.8em;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        /* Custom styling for Navbar */
+        .navbar-light .navbar-toggler {
+            border-color: rgba(0, 123, 255, 0.5);
+        }
+        .navbar-toggler-icon {
+            color: #007bff;
+        }
+        .navbar-collapse {
+            justify-content: flex-end;
         }
     </style>
 </head>
 <body>
-    <!-- Toolbar at the top of the page -->
-    <div class="toolbar">
-        <button id="location-btn" class="map-btn">Re-center Map</button>
-        <input type="text" id="search-box" placeholder="Search for a heritage site..." />
-        <button id="find-nearest-btn" class="map-btn">Find Nearest Heritage Site</button>
-        <form method="POST" action="{% url 'logout' %}" style="display: inline;">
-            {% csrf_token %}
-            <button id="logout-btn" type="submit" class="map-btn">Log Out</button>
-        </form>
-    </div>
 
-    <h1>Nearby Heritage Sites</h1>
-    <p>Welcome, {{ user.email }}! Your current location is shown below.</p>
+    <!-- Navbar with hamburger menu -->
+<nav class="navbar navbar-expand-lg navbar-light" style="background-color: #80ce80;">
+    <div class="container-fluid">
+        <input type="text" id="search-box" class="form-control me-2" placeholder="Search for a heritage site..." style="max-width: 250px;">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarButtons" aria-controls="navbarButtons" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarButtons">
+            <button id="location-btn" class="btn btn-primary me-2 my-1">Re-center Map</button>
+            <button id="find-nearest-btn" class="btn btn-success me-2 my-1">Find Nearest Heritage Site</button>
+            <form method="POST" action="{% url 'logout' %}" class="d-inline">
+                {% csrf_token %}
+                <button id="logout-btn" type="submit" class="btn btn-danger my-1">Log Out</button>
+            </form>
+        </div>
+    </div>
+</nav>
+
+<div style="text-align: center; background-color: rgb(255, 255, 255); height: 80px;">
+    <h1 >UNESCO World Heritage Sites</h1>
+    <p>Welcome! Look for heritage sites near you or around the world.</p>
+</div>
+
+
+
 
     <!-- Fullscreen Map -->
     <div id="map"></div>
 
+    <!-- JS Libraries -->
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
     <script>
         // Initialize the map with a default location (Dublin)
         const map = L.map('map').setView([53.3498, -6.2603], 10);
@@ -114,14 +96,12 @@
             attribution: '© OpenStreetMap contributors'
         }).addTo(map);
 
-        // Function to calculate the distance between two coordinates
+        // Function to calculate distance
         function calculateDistance(lat1, lon1, lat2, lon2) {
             const R = 6371;
             const dLat = (lat2 - lat1) * Math.PI / 180;
             const dLon = (lon2 - lon1) * Math.PI / 180;
-            const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-                      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+            const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
             return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
         }
 
@@ -133,10 +113,7 @@
                     userLat = position.coords.latitude;
                     userLng = position.coords.longitude;
                     map.setView([userLat, userLng], 12);
-                    L.marker([userLat, userLng])
-                        .addTo(map)
-                        .bindPopup("<b>Your Location</b><br>You are here!")
-                        .openPopup();
+                    L.marker([userLat, userLng]).addTo(map).bindPopup("<b>Your Location</b><br>You are here!").openPopup();
                 },
                 function (error) {
                     console.error("Geolocation error:", error);
@@ -190,23 +167,33 @@
             if (userLat && userLng) map.setView([userLat, userLng], 12);
         });
 
-        // Search functionality
+        // Enhanced search functionality with map centering on matched site
         function performSearch(searchTerm) {
             searchTerm = searchTerm.toLowerCase();
-            const filteredSites = heritageSites.filter(site =>
+            const matchedSite = heritageSites.find(site =>
                 site.name.toLowerCase().includes(searchTerm) || 
                 site.description.toLowerCase().includes(searchTerm)
             );
 
-            markers.clearLayers();
-            filteredSites.forEach(site => {
-                const marker = L.marker([site.latitude, site.longitude])
-                    .bindPopup(`<b>${site.name}</b><br>${site.description}`);
-                markers.addLayer(marker);
-            });
-            map.addLayer(markers);
+            if (matchedSite) {
+                // Center map on the matched site and open popup
+                map.setView([matchedSite.latitude, matchedSite.longitude], 14);
+                L.popup()
+                    .setLatLng([matchedSite.latitude, matchedSite.longitude])
+                    .setContent(`<b>${matchedSite.name}</b><br>${matchedSite.description}`)
+                    .openOn(map);
+            } else {
+                markers.clearLayers();
+                heritageSites.forEach(site => {
+                    const marker = L.marker([site.latitude, site.longitude])
+                        .bindPopup(`<b>${site.name}</b><br>${site.description}`);
+                    markers.addLayer(marker);
+                });
+                map.addLayer(markers);
+            }
         }
 
+        // Attach search functionality to the search box
         document.getElementById('search-box').addEventListener('input', (event) => {
             performSearch(event.target.value);
         });
