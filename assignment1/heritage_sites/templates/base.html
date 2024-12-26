@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -25,12 +26,15 @@
         body {
             font-family: Arial, sans-serif;
             background-color: #ffffff;
+            background-color: #ffffff;
             display: flex;
             flex-direction: column;
             min-height: 100vh;
         }
 
+
         header {
+            background-color: #80ce80;
             background-color: #80ce80;
             padding: 1em;
             color: white;
@@ -40,9 +44,17 @@
             font-size: 1.5em;
             margin: 0;
             color: #ffffff !important;
+
+        header h1 {
+            font-size: 1.5em;
+            margin: 0;
+            color: #ffffff !important;
         }
 
+
         #content {
+            padding: 2rem;
+            max-width: 800px;
             padding: 2rem;
             max-width: 800px;
             width: 100%;
@@ -51,8 +63,11 @@
             border-radius: 10px;
         }
 
+
         footer {
             text-align: center;
+            padding: 1rem;
+            background-color: #80ce80;
             padding: 1rem;
             background-color: #80ce80;
             color: white;
@@ -100,7 +115,36 @@
     </style>
 </head>
 
+
 <body>
+
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-light" style="background-color: #80ce80;">
+            <div class="container-fluid">
+                <h1 class="navbar-brand" style="color: white;">UNESCO World Heritage Sites</h1>
+                <button class="navbar-toggler ms-auto" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false"
+                    aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        {% if user.is_authenticated %}
+                        <li class="nav-item">
+                            <a href="{% url 'logout' %}" class="btn btn-outline-light nav-link">Logout</a>
+                        </li>
+                        {% else %}
+                        <li class="nav-item">
+                            <a href="{% url 'login' %}" class="btn btn-outline-light nav-link">Login</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'signup' %}" class="btn btn-outline-light nav-link">Sign Up</a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </nav>
 
     <header>
         <nav class="navbar navbar-expand-lg navbar-light" style="background-color: #80ce80;">
@@ -156,5 +200,6 @@
         }
         </script>
 </body>
+
 
 </html>

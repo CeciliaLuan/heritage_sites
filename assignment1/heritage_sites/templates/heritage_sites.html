@@ -10,18 +10,24 @@
 
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" />
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css" />
 
+
     <style>
         body {
             font-family: 'Arial', sans-serif;
             background-color: #ffffff;
+            background-color: #ffffff;
             color: #333;
             display: flex;
             flex-direction: column;
+            min-height: 100vh;
             min-height: 100vh;
         }
 
@@ -103,6 +109,7 @@
     <!-- Fullscreen Map -->
     <div id="map"></div>
 
+    <!-- JS Libraries -->
     <!-- JS Libraries -->
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
@@ -189,6 +196,7 @@
                     userLat = position.coords.latitude;
                     userLng = position.coords.longitude;
                     map.setView([userLat, userLng], 12);
+                    L.marker([userLat, userLng]).addTo(map).bindPopup("<b>Your Location</b><br>You are here!").openPopup();
                     L.marker([userLat, userLng]).addTo(map).bindPopup("<b>Your Location</b><br>You are here!").openPopup();
                 },
                 function (error) {
