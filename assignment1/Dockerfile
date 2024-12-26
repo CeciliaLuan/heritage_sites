@@ -27,6 +27,9 @@ RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 RUN pip install django-leaflet
 
+# Install django-leaflet and django-pwa
+RUN pip install django-leaflet django-pwa
+
 # Copy uWSGI configuration file
 COPY uwsgi.ini /app/uwsgi.ini
 

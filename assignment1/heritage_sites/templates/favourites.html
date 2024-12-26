@@ -1,0 +1,89 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Favorite Heritage Sites</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" />
+</head>
+
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">Heritage Locator</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{% url 'heritage_sites' %}">Home</a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="{% url 'favourites' %}">My Favorites</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-5">
+        <h1 class="mb-4">My Favorite Heritage Sites</h1>
+        <ul id="favorites-list" class="list-group">
+            {% if favourites %}
+            {% for site in favourites %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                <div>
+                    <strong>{{ site.site_name }}</strong><br>
+                    <small>{{ site.site_description }}</small>
+                </div>
+                <button class="btn btn-danger btn-sm" onclick="removeFromFavorites({{ site.id }})">Remove</button>
+            </li>
+            {% endfor %}
+            {% else %}
+            <li class="list-group-item">No favorite sites yet.</li>
+            {% endif %}
+        </ul>
+    </div>
+    <link rel="manifest" href="/manifest.json"> <!-- Add Manifest -->
+    <!-- Service Worker -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('{% static "js/serviceworker.js" %}')
+                .then(registration => console.log('Service Worker registered with scope:', registration.scope))
+                .catch(error => console.log('Service Worker registration failed:', error));
+        }
+    </script>
+
+    <script>
+        function removeFromFavorites(id) {
+            fetch('/favourites/api/remove/', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({ id: id })
+            })
+                .then(response => {
+                    if (response.ok) {
+                        alert('Removed successfully!');
+                        location.reload(); // Reload the page to update the list
+                    } else {
+                        alert('Failed to remove favourite.');
+                    }
+                })
+                .catch(error => console.error('Error removing favourite:', error));
+        }
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

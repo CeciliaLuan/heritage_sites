@@ -1,32 +1,34 @@
 import os
 from pathlib import Path
+import platform
 
-# Set GDAL library path for Docker
-os.environ['GDAL_LIBRARY_PATH'] = '/opt/conda/envs/awm_env/lib/libgdal.so'
+# Set GDAL library path dynamically
+if platform.system() == 'Windows':
+    GDAL_LIBRARY_PATH = r"C:\Users\cecil\miniconda3\envs\awm_env\Library\bin\gdal.dll"
+else:
+    GDAL_LIBRARY_PATH = '/opt/conda/envs/awm_env/lib/libgdal.so'
+os.environ['GDAL_LIBRARY_PATH'] = GDAL_LIBRARY_PATH
 
-
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
+# Base directory of the project
 BASE_DIR = Path(__file__).resolve().parent.parent
-
-# Static files (CSS, JavaScript, Images)
+# Static files configuration
 STATIC_URL = '/static/'
-STATIC_ROOT = BASE_DIR/'staticfiles'
-STATICFILES_DIR = [
-    os.path.join(BASE_DIR,"static")
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),  # Your app's static directory
 ]
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # Directory where collectstatic will gather all static files
+
+
 
 # Whitenoise configuration for serving static files in production
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-0*08=n!g!7nj3i+$&5&&pd5hlmh(2i40qxijy)^c6t9n4@1qs4'
+# Security
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'fallback-secret-key')
+DEBUG = True  # Change to False in production
+ALLOWED_HOSTS = ['*']  # Use specific domains in production
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True  # Set to False in production
-
-ALLOWED_HOSTS = ['*']  # Modify for production (e.g., ['yourdomain.com'])
-
-# Application definition
+# Installed apps
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -37,11 +39,13 @@ INSTALLED_APPS = [
     'django.contrib.gis',
     'heritage_sites',
     'leaflet',
+    'pwa', 
 ]
 
+# Middleware
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',  # For serving static files efficiently
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -49,10 +53,11 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
- 
 
+# URL configuration
 ROOT_URLCONF = 'assignment1.urls'
 
+# Templates
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -69,49 +74,40 @@ TEMPLATES = [
     },
 ]
 
+# WSGI application
 WSGI_APPLICATION = 'assignment1.wsgi.application'
 
+# Database
 # Database configuration
 DATABASES = {
     'default': {
-        'ENGINE': 'django.contrib.gis.db.backends.postgis',  # PostGIS database engine
-        'NAME': 'heritage_db',  # Your PostGIS database name
-        'HOST': 'localhost',  # Container name for your PostgreSQL/PostGIS database
-        'USER': 'c21379843',  # Database user
-        'PASSWORD': 'cece123',  # Database password
-        'PORT': '',  # Port for PostgreSQL
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
+        'NAME': 'heritage_db',  # Database name
+        'USER': 'c21379843',    # Username from docker-compose.yml
+        'PASSWORD': 'cece123',  # Password from docker-compose.yml
+        'HOST': 'db',           # Docker service name for the database
+        'PORT': '5432',         # PostgreSQL default port
     }
 }
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
+    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
+# Localization
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
-# Default primary key field type
+# Default auto field
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# CRISPY FORMS configuration
-CRISPY_TEMPLATE_PACK = 'bootstrap4'
-CRISPY_FAIL_SILENTLY = not DEBUG
-
-# Leaflet configuration for maps
+# Leaflet configuration
 LEAFLET_CONFIG = {
     'DEFAULT_CENTER': (53.0, -8.0),
     'DEFAULT_ZOOM': 6,
@@ -121,5 +117,70 @@ LEAFLET_CONFIG = {
     'SCALE': None,
     'OPACITY': 0.5,
 }
-
+# PWA specific settings
+PWA_APP_NAME = 'Heritage Sites Locator'
+PWA_APP_DESCRIPTION = "Explore heritage sites near you"
+PWA_APP_THEME_COLOR = '#000000'
+PWA_APP_BACKGROUND_COLOR = '#ffffff'
+PWA_APP_DISPLAY = 'standalone'
+PWA_APP_SCOPE = '/'
+PWA_APP_START_URL = '/'
+PWA_APP_ICONS = [
+    {
+        'src': '/static/images/icons/icon-72x72.png',
+        'sizes': '72x72',
+        'type': 'image/png',
+    },
+    {
+        'src': '/static/images/icons/icon-96x96.png',
+        'sizes': '96x96',
+        'type': 'image/png',
+    },
+    {
+        'src': '/static/images/icons/icon-144x144.png',
+        'sizes': '144x144',
+        'type': 'image/png',
+    },
+    {
+        'src': '/static/images/icons/icon-192x192.png',
+        'sizes': '192x192',
+        'type': 'image/png',
+    },
+    {
+        'src': '/static/images/icons/icon-512x512.png',
+        'sizes': '512x512',
+        'type': 'image/png',
+    },
+]
+PWA_APP_ICONS_APPLE = [
+    {
+        'src': '/static/images/icons/icon-152x152.png',
+        'sizes': '152x152',
+        'type': 'image/png',
+    },
+]
+PWA_APP_SPLASH_SCREEN = [
+    {
+        'src': '/static/images/splash-640x1136.png',
+        'sizes': '640x1136',
+        'type': 'image/png',
+    },
+    {
+        'src': '/static/images/splash-750x1334.png',
+        'sizes': '750x1334',
+        'type': 'image/png',
+    },
+    {
+        'src': '/static/images/splash-1242x2208.png',
+        'sizes': '1242x2208',
+        'type': 'image/png',
+    },
+    {
+        'src': '/static/images/splash-1125x2436.png',
+        'sizes': '1125x2436',
+        'type': 'image/png',
+    },
+]
+PWA_APP_DIR = 'ltr'
+PWA_APP_LANG = 'en-US'
 

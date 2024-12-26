@@ -2,43 +2,47 @@ from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.contrib.gis.geos import Point
 from django.contrib.auth import login, logout
-from .models import HeritageSite, Profile  # Ensure Profile is imported if it's used
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
+from .models import HeritageSite, Profile, Favourite  # Ensure Favorite is imported
+import json
+
 
 # View that reads the location and passes it to the map
+@login_required
 def map_view(request):
-    if request.user.is_authenticated:
-        # Get all HeritageSites
-        heritage_sites = HeritageSite.objects.all()
-        
-        # Prepare the data for the map: List of heritage sites with their name and location
-        heritage_sites_data = [
-            {
-                "name": site.name,
-                "description": site.description,
-                "latitude": site.location.y,  # Using .y for latitude
-                "longitude": site.location.x,  # Using .x for longitude
-            }
-            for site in heritage_sites
-        ]
-        
-        # Context to pass to the template
-        context = {
-            'user': request.user,
-            'heritage_sites_data': heritage_sites_data
+    # Get all HeritageSites
+    heritage_sites = HeritageSite.objects.all()
+    
+    # Prepare the data for the map: List of heritage sites with their name and location
+    heritage_sites_data = [
+        {
+            "name": site.name,
+            "description": site.description,
+            "latitude": site.location.y,  # Using .y for latitude
+            "longitude": site.location.x,  # Using .x for longitude
         }
-        return render(request, 'heritage_sites.html', context)
-    else:
-        return redirect('login')  # Redirect to login if user is not authenticated
+        for site in heritage_sites
+    ]
+    
+    # Context to pass to the template
+    context = {
+        'user': request.user,
+        'heritage_sites_data': heritage_sites_data
+    }
+    return render(request, 'heritage_sites.html', context)
 
 
 # View for updating user's location (via Geolocation API)
+@csrf_exempt
+@login_required
 def update_location(request):
     if request.method == 'POST':
         latitude = request.POST.get('latitude')
         longitude = request.POST.get('longitude')
 
-        # Update the user's profile location (if necessary)
+        # Update the user's profile location
         user_profile = request.user.profile  # Assuming the Profile is linked via OneToOneField
         user_profile.location = Point(float(longitude), float(latitude))
         user_profile.save()
@@ -82,7 +86,7 @@ def signup_view(request):
             # Create a profile for the user (optional)
             Profile.objects.create(user=user)  # Make sure Profile model exists
             
-            return redirect('signup')  # Redirect to the map page after registration
+            return redirect('heritage_sites')  # Redirect to the map page after registration
     else:
         form = UserCreationForm()
     
@@ -91,3 +95,75 @@ def signup_view(request):
         field.widget.attrs['class'] = 'form-control'
 
     return render(request, 'signup.html', {'form': form})
+
+
+@csrf_exempt
+@login_required
+def add_to_favourites(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            
+            # Log received data for debugging
+            print("Received data on server:", data)
+
+            # Validate fields
+            required_fields = ['site_name', 'site_description', 'latitude', 'longitude']
+            missing_fields = [field for field in required_fields if field not in data or not data[field]]
+            if missing_fields:
+                return JsonResponse({'error': f'Missing required fields: {", ".join(missing_fields)}'}, status=400)
+
+            # Create a new favourite
+            Favourite.objects.create(
+                user=request.user,
+                site_name=data['site_name'],
+                site_description=data['site_description'],
+                latitude=data['latitude'],
+                longitude=data['longitude']
+            )
+            return JsonResponse({'success': True})
+        except json.JSONDecodeError as e:
+            print("JSON decode error:", e)
+            return JsonResponse({'error': 'Invalid JSON payload'}, status=400)
+        except Exception as e:
+            print("Unexpected error:", e)
+            return JsonResponse({'error': f'Unexpected error: {str(e)}'}, status=500)
+    return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+
+@login_required
+def favourites_view(request):
+    """
+    Render the My Favorites page.
+    Dynamically fetch and display the logged-in user's favorite heritage sites.
+    """
+    if request.method == "GET":
+        # Fetch the user's favorites from the database
+        user_favourites = Favourite.objects.filter(user=request.user)
+
+        # Prepare the data for rendering
+        favourites_data = [
+            {
+                "id": favourite.id,
+                "site_name": favourite.site_name,
+                "site_description": favourite.site_description,
+                "latitude": favourite.latitude,
+                "longitude": favourite.longitude,
+            }
+            for favourite in user_favourites
+        ]
+
+        # Pass the data to the template
+        return render(request, 'favourites.html', {"favourites": favourites_data})
+
+@csrf_exempt
+@login_required
+def remove_favourite(request):
+    if request.method == "DELETE":
+        data = json.loads(request.body)
+        favourite = Favourite.objects.filter(id=data.get('id'), user=request.user).first()
+        if favourite:
+            favourite.delete()
+            return JsonResponse({'success': True})
+        return JsonResponse({'success': False, 'error': 'Favourite not found'}, status=404)
+    return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=400)

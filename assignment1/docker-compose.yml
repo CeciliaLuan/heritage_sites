@@ -9,12 +9,12 @@ services:
     volumes:
       - heritage_spatialdb:/var/lib/postgresql/data
     ports:
-      - "25433:5432"  # Host port : Container port
+      - "25433:5432"  
 
   pgadmin:
     image: dpage/pgadmin4
     environment:
-      PGADMIN_DEFAULT_EMAIL: c21379843@mytudublin.ie  # Replace with your email
+      PGADMIN_DEFAULT_EMAIL: cece@mytudublin.ie  # Replace with your email
       PGADMIN_DEFAULT_PASSWORD: 9212221c  # Replace with a strong password
     ports:
       - "20080:80"
@@ -28,12 +28,18 @@ services:
     command: ["./wait-for-it.sh", "db:5432", "--", "bash", "-c", "source activate awm_env && python manage.py runserver 0.0.0.0:8001"]
     environment:
       - GDAL_LIBRARY_PATH=/usr/lib/libgdal.so  # Set GDAL path
+      - DB_HOST=db
+      - DB_NAME=heritage_db
+      - DB_USER=c21379843
+      - DB_PASSWORD=cece123
+      - DB_PORT=5432
     volumes:
       - .:/app
     ports:
       - "8001:8001"
     depends_on:
       - db
+    
 
   nginx:
     image: nginx:latest

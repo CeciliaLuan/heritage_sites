@@ -7,7 +7,7 @@ User = get_user_model()
 
 # Profile model for user location
 class Profile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     location = models.PointField(null=True, blank=True)  # Stores user's latitude and longitude
 
     def __str__(self):
@@ -18,17 +18,23 @@ class HeritageSite(models.Model):
     description = models.TextField()
     latitude = models.FloatField()
     longitude = models.FloatField()
+    location = models.PointField(default=Point(0.0, 0.0))  # GeoDjango-specific field
 
-    # GeoDjango-specific: using PointField to store geographic coordinates (latitude, longitude)
-    location = models.PointField(default=Point(0.0, 0.0))
-
-    # Returns the string representation of the model
     def __str__(self):
         return self.name
 
+class Favourite(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='favorites')
+    site_name = models.CharField(max_length=255)
+    site_description = models.TextField()
+    latitude = models.FloatField()
+    longitude = models.FloatField()
+
+    def __str__(self):
+        return f"{self.site_name} (by {self.user.username})"
+
 # Utility function to set or update the user's location
 def set_user_location(user_id, latitude, longitude):
-    User = get_user_model()  # Get the User model
     user = User.objects.get(id=user_id)
 
     # Create a Point object from the longitude and latitude
