@@ -63,7 +63,28 @@
 
         .navbar-collapse {
             justify-content: flex-end;
+
         }
+
+
+        #directions-sidebar {
+            border-right: 1px solid #ddd;
+            background-color: #f8f9fa;
+        }
+
+        #directions-content p {
+            margin: 0;
+            padding: 5px 0;
+            font-size: 0.9rem;
+        }
+
+        #directions-content p:nth-child(odd) {
+            background-color: #f1f1f1;
+        }
+
+        .leaflet-control-container .leaflet-routing-container-hide {
+    display: none;
+}
     </style>
 </head>
 
@@ -82,7 +103,7 @@
                     <li class="nav-item">
                         <a class="nav-link active" href="{% url 'heritage_sites' %}">Home</a>
                     </li>
-                    
+
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'favourites' %}">My Favourites</a>
                     </li>
@@ -106,14 +127,31 @@
         <p>Welcome! Look for heritage sites near you or around the world.</p>
     </div>
 
-    <!-- Fullscreen Map -->
-    <div id="map"></div>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar for directions -->
+            <div class="col-md-3 bg-light p-3" id="directions-sidebar"
+                style="display: none; height: calc(100vh - 110px); overflow-y: auto;">
+                <h5>Directions</h5>
+                <div id="directions-content"></div>
+                <button class="btn btn-secondary mt-3" onclick="hideDirections()">Close</button>
+            </div>
+
+            <!-- Map -->
+            <div class="col-md-12" id="map-container">
+                <div id="map" style="height: calc(100vh - 110px);"></div>
+            </div>
+        </div>
+    </div>
+
+
 
     <!-- JS Libraries -->
     <!-- JS Libraries -->
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
 
     <link rel="manifest" href="/manifest.json">
 
@@ -149,12 +187,16 @@
                 latitude: ${site.latitude},
                 longitude: ${site.longitude}
             })">Add to Favourites</button>
+            <button class="btn btn-success btn-sm mt-2" onclick="displayRoute({
+                latitude: ${site.latitude},
+                longitude: ${site.longitude},
+                name: '${site.name}'
+            })">Show Route</button>
         `);
             markers.addLayer(marker);
         });
         map.addLayer(markers);
 
-        map.addLayer(markers);
 
         function addToFavourites(site) {
             const payload = {
@@ -206,6 +248,68 @@
             );
         } else {
             alert("Geolocation is not supported by your browser.");
+        }
+
+
+        let routingControl;
+        function displayRoute(site) {
+            if (!userLat || !userLng) {
+                alert("Your location is not available. Please allow location access.");
+                return;
+            }
+
+            // If a route is already displayed, remove it
+            if (routingControl) {
+                map.removeControl(routingControl);
+            }
+
+            // Clear previous directions content
+            document.getElementById('directions-content').innerHTML = '';
+
+            // Show the sidebar and resize the map
+            document.getElementById('directions-sidebar').style.display = 'block';
+            document.getElementById('map-container').classList.replace('col-md-12', 'col-md-9');
+            map.invalidateSize(); // Ensures the map adjusts to the new size
+
+            // Add a new routing control for the selected site
+            routingControl = L.Routing.control({
+                waypoints: [
+                    L.latLng(userLat, userLng), // User's current location
+                    L.latLng(site.latitude, site.longitude) // Heritage site's location
+                ],
+                routeWhileDragging: true,
+                addWaypoints: false, // Prevent users from adding waypoints
+                createMarker: () => null, // Remove default routing markers
+                show: false, // Disable the instructions display on the map
+                lineOptions: {
+                    styles: [{ color: 'red', weight: 5 }] // Custom styling for the route
+                }
+            }).addTo(map);
+
+            // Extract and display directions in the sidebar
+            routingControl.on('routesfound', function (e) {
+                const routes = e.routes[0].instructions; // Retrieve only instructions
+                const directionsContent = document.getElementById('directions-content');
+                directionsContent.innerHTML = `<p><strong>${site.name}</strong></p>`;
+                e.routes[0].instructions.forEach((instruction, index) => {
+                    const step = document.createElement('p');
+                    step.innerText = `${index + 1}. ${instruction.text}`;
+                    directionsContent.appendChild(step);
+                });
+            });
+        }
+
+
+        function hideDirections() {
+            // Hide the sidebar and resize the map to full width
+            document.getElementById('directions-sidebar').style.display = 'none';
+            document.getElementById('map-container').classList.replace('col-md-9', 'col-md-12');
+            map.invalidateSize(); // Ensures the map adjusts to the new size
+
+            if (routingControl) {
+                map.removeControl(routingControl);
+                routingControl = null;
+            }
         }
 
         // Find nearest site function
