@@ -79,14 +79,15 @@ WSGI_APPLICATION = 'assignment1.wsgi.application'
 
 # Database
 # Database configuration
+# Database configuration
 DATABASES = {
     'default': {
-        'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': 'heritage_db',  # Database name
-        'USER': 'c21379843',    # Username from docker-compose.yml
-        'PASSWORD': 'cece123',  # Password from docker-compose.yml
-        'HOST': 'db',           # Docker service name for the database
-        'PORT': '5432',         # PostgreSQL default port
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',  # PostGIS database engine
+        'NAME': 'heritage_db',  # Your PostGIS database name
+        'HOST': 'localhost',  # Container name for your PostgreSQL/PostGIS database
+        'USER': 'c21379843',  # Database user
+        'PASSWORD': 'cece123',  # Database password
+        'PORT': '',  # Port for PostgreSQL
     }
 }
 
