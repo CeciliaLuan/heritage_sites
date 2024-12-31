@@ -26,7 +26,7 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 # Security
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'fallback-secret-key')
 DEBUG = True  # Change to False in production
-ALLOWED_HOSTS = ['*']  # Use specific domains in production
+ALLOWED_HOSTS = ['localhost', '127.0.0.1','13.48.100.18','heritagesites.xyz','www.heritagesites.xyz']  # Modify for production (e.g., ['yourdomain.com'])
 
 # Installed apps
 INSTALLED_APPS = [
