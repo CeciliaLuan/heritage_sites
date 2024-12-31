@@ -2,12 +2,8 @@ import os
 from pathlib import Path
 import platform
 
-# Set GDAL library path dynamically
-if platform.system() == 'Windows':
-    GDAL_LIBRARY_PATH = r"C:\Users\cecil\miniconda3\envs\awm_env\Library\bin\gdal.dll"
-else:
-    GDAL_LIBRARY_PATH = '/opt/conda/envs/awm_env/lib/libgdal.so'
-os.environ['GDAL_LIBRARY_PATH'] = GDAL_LIBRARY_PATH
+# Set GDAL library path for Docker
+os.environ['GDAL_LIBRARY_PATH'] = '/opt/conda/envs/awm_env/lib/libgdal.so'
 
 # Base directory of the project
 BASE_DIR = Path(__file__).resolve().parent.parent
