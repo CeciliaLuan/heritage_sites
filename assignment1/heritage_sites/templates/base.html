@@ -44,12 +44,8 @@
             font-size: 1.5em;
             margin: 0;
             color: #ffffff !important;
-
-        header h1 {
-            font-size: 1.5em;
-            margin: 0;
-            color: #ffffff !important;
         }
+
 
 
         #content {
@@ -107,10 +103,18 @@
                 gap: 10px;
             }
 
-            .navbar-nav .nav-item {
-                flex: 1 1 auto;
-                max-width: 120px;
+            .navbar-nav .nav-item .btn {
+                margin-right: 10px;
+                /* Adds space between buttons */
             }
+
+            .navbar-nav .nav-item:last-child .btn {
+                margin-right: 0;
+                /* Prevents extra margin for the last button */
+            }
+
+
+
         }
     </style>
 </head>
@@ -123,7 +127,7 @@
     <header>
         <nav class="navbar navbar-expand-lg navbar-light" style="background-color: #80ce80;">
             <div class="container-fluid">
-                <h1 class="navbar-brand" style="color: white;">UNESCO World Heritage Sites</h1>
+                <h1 class="navbar-brand" style="color: white;" href="" >UNESCO World Heritage Sites</h1>
                 <button class="navbar-toggler ms-auto" type="button" data-bs-toggle="collapse"
                     data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false"
                     aria-label="Toggle navigation">
@@ -137,11 +141,12 @@
                         </li>
                         {% else %}
                         <li class="nav-item">
-                            <a href="{% url 'login' %}" class="btn btn-outline-light nav-link">Login</a>
+                            <a href="{% url 'login' %}" class="btn btn-outline-light nav-link me-2">Login</a>
                         </li>
                         <li class="nav-item">
                             <a href="{% url 'signup' %}" class="btn btn-outline-light nav-link">Sign Up</a>
                         </li>
+
                         {% endif %}
                     </ul>
                 </div>
@@ -172,7 +177,7 @@
                 .then(registration => console.log('Service Worker registered with scope:', registration.scope))
                 .catch(error => console.log('Service Worker registration failed:', error));
         }
-        </script>
+    </script>
 </body>
 
 </html>
