@@ -7,6 +7,8 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from .models import HeritageSite, Profile, Favourite  # Ensure Favorite is imported
 import json
+from rest_framework import generics, permissions
+from .serializers import HeritageSiteSerializer, FavouriteSerializer
 
 
 # View that reads the location and passes it to the map
@@ -168,3 +170,40 @@ def remove_favourite(request):
             return JsonResponse({'success': True})
         return JsonResponse({'success': False, 'error': 'Favourite not found'}, status=404)
     return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=400)
+
+# ============================================
+# DRF API Views
+# ============================================
+
+class HeritageSiteListView(generics.ListAPIView):
+    """
+    API view for listing all heritage sites.
+    """
+    queryset = HeritageSite.objects.all()
+    serializer_class = HeritageSiteSerializer
+    permission_classes = [permissions.AllowAny]
+
+
+class FavouriteListView(generics.ListCreateAPIView):
+    """
+    API view for listing and creating favourite sites.
+    """
+    serializer_class = FavouriteSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return Favourite.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+
+class FavouriteDetailView(generics.RetrieveDestroyAPIView):
+    """
+    API view for retrieving or deleting a single favourite site.
+    """
+    serializer_class = FavouriteSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return Favourite.objects.filter(user=self.request.user)
