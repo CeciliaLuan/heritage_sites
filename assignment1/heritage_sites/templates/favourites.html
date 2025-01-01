@@ -1,3 +1,4 @@
+<!-- Load static files -->
 {% load static %}
 
 <!DOCTYPE html>
@@ -12,9 +13,9 @@
 
 <body>
     <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <nav class="navbar navbar-expand-lg navbar-light" style="background-color: #80ce80;">
         <div class="container-fluid">
-            <a class="navbar-brand" href="/">Heritage Locator</a>
+            <a class="navbar-brand" style="color: white;"href="">Heritage sites Locator</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
                 aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
@@ -22,13 +23,17 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a class="nav-link active" href="{% url 'heritage_sites' %}">Home</a>
+                        <a class="nav-link active" style="color: white;" href="{% url 'heritage_sites' %}">Home</a>
                     </li>
-
                     <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="{% url 'favourites' %}">My Favorites</a>
+                        <a class="nav-link active" style="color: white;" aria-current="page" href="{% url 'favourites' %}">My Favorites</a>
                     </li>
                 </ul>
+
+                <form method="POST" action="{% url 'logout' %}" class="d-inline">
+                    {% csrf_token %}
+                    <button class="btn btn-danger">Log Out</button>
+                </form>
             </div>
         </div>
     </nav>
@@ -40,8 +45,8 @@
             {% for site in favourites %}
             <li class="list-group-item d-flex justify-content-between align-items-center">
                 <div>
-                    <strong>{{ site.site_name }}</strong><br>
-                    <small>{{ site.site_description }}</small>
+                    <strong class="site-name">{{ site.site_name }}</strong><br>
+                    <small>{{ site.site_description|safe }}</small>
                 </div>
                 <button class="btn btn-danger btn-sm" onclick="removeFromFavorites({{ site.id }})">Remove</button>
             </li>
@@ -51,7 +56,9 @@
             {% endif %}
         </ul>
     </div>
+
     <link rel="manifest" href="/manifest.json"> <!-- Add Manifest -->
+
     <!-- Service Worker -->
     <script>
         if ('serviceWorker' in navigator) {
@@ -62,6 +69,8 @@
     </script>
 
     <script>
+ 
+
         function removeFromFavorites(id) {
             fetch('/favourites/api/remove/', {
                 method: 'DELETE',
