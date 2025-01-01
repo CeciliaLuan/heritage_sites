@@ -29,6 +29,7 @@ def map_view(request):
     # Context to pass to the template
     context = {
         'user': request.user,
+        'username': request.user.username,  # Pass the username here
         'heritage_sites_data': heritage_sites_data
     }
     return render(request, 'heritage_sites.html', context)
