@@ -124,41 +124,31 @@ PWA_APP_SCOPE = '/'
 PWA_APP_START_URL = '/'
 PWA_APP_ICONS = [
     {
-        'src': '/static/images/icons/icon-72x72.png',
+        'src': '/static/images/icons/heri_72x72.png',
         'sizes': '72x72',
         'type': 'image/png',
     },
     {
-        'src': '/static/images/icons/icon-96x96.png',
+        'src': '/static/images/icons/heri_96x96.png',
         'sizes': '96x96',
         'type': 'image/png',
     },
     {
-        'src': '/static/images/icons/icon-144x144.png',
-        'sizes': '144x144',
-        'type': 'image/png',
-    },
-    {
-        'src': '/static/images/icons/icon-192x192.png',
-        'sizes': '192x192',
-        'type': 'image/png',
-    },
-    {
-        'src': '/static/images/icons/icon-512x512.png',
-        'sizes': '512x512',
+        'src': '/static/images/icons/heri_128X128.png',
+        'sizes': '128x128',
         'type': 'image/png',
     },
 ]
 PWA_APP_ICONS_APPLE = [
     {
-        'src': '/static/images/icons/icon-152x152.png',
+        'src': '/static/images/icons/heri_152x152.png',
         'sizes': '152x152',
         'type': 'image/png',
     },
 ]
 PWA_APP_SPLASH_SCREEN = [
     {
-        'src': '/static/images/splash-640x1136.png',
+        'src': '/static/images/icon.png',
         'sizes': '640x1136',
         'type': 'image/png',
     },
