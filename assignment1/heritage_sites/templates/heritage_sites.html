@@ -35,7 +35,7 @@
             flex: 1;
             width: calc(100% - 20px);
             /* Subtracting 20px to leave space on both sides */
-            height: calc(100vh - 120px);
+            height: 75vh;
             /* Adjust the height according to your layout */
             margin: 10px;
             /* 10px margin from the edges of the screen */
@@ -83,17 +83,17 @@
         }
 
         .leaflet-control-container .leaflet-routing-container-hide {
-    display: none;
-}
+            display: none;
+        }
     </style>
 </head>
 
 <body>
 
     <!-- Navbar with links -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <nav class="navbar navbar-expand-lg navbar-light" style="background-color: #80ce80;">
         <div class="container-fluid">
-            <a class="navbar-brand" href="/">Heritage Locator</a>
+            <a class="navbar-brand" style="color: white;" href="">Heritage Sites Locator</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
                 aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
@@ -101,11 +101,11 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a class="nav-link active" href="{% url 'heritage_sites' %}">Home</a>
+                        <a class="nav-link active" style="color: white;"href="{% url 'heritage_sites' %}">Home</a>
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'favourites' %}">My Favourites</a>
+                        <a class="nav-link" style="color: white;"href="{% url 'favourites' %}">My Favourites</a>
                     </li>
                 </ul>
                 <form class="d-flex">
@@ -122,24 +122,27 @@
         </div>
     </nav>
 
-    <div style="text-align: center; background-color: rgb(255, 255, 255); height: 90px;">
+    <div style="text-align: center; background-color: rgb(255, 255, 255); height: 100px;">
         <h1>UNESCO World Heritage Sites</h1>
-        <p>Welcome! Look for heritage sites near you or around the world.</p>
+        <p>Welcome, {{ request.user.username }}! Look for heritage sites near you or around the world.</p>
+
     </div>
 
     <div class="container-fluid">
         <div class="row">
             <!-- Sidebar for directions -->
             <div class="col-md-3 bg-light p-3" id="directions-sidebar"
-                style="display: none; height: calc(100vh - 110px); overflow-y: auto;">
+                style="display: none; height: 75vh; overflow-y: auto; position: relative;">
+                <button class="btn btn-secondary" onclick="hideDirections()" 
+                style="position: absolute; top: 5px; right: 10px;">Close</button>
                 <h5>Directions</h5>
                 <div id="directions-content"></div>
-                <button class="btn btn-secondary mt-3" onclick="hideDirections()">Close</button>
+
             </div>
 
             <!-- Map -->
             <div class="col-md-12" id="map-container">
-                <div id="map" style="height: calc(100vh - 110px);"></div>
+                <div id="map"></div>
             </div>
         </div>
     </div>
@@ -187,7 +190,7 @@
                 latitude: ${site.latitude},
                 longitude: ${site.longitude}
             })">Add to Favourites</button>
-            <button class="btn btn-success btn-sm mt-2" onclick="displayRoute({
+            <button class="btn btn-success btn-sm " onclick="displayRoute({
                 latitude: ${site.latitude},
                 longitude: ${site.longitude},
                 name: '${site.name}'
@@ -197,6 +200,33 @@
         });
         map.addLayer(markers);
 
+        // Search functionality
+        function performSearch(searchTerm) {
+            searchTerm = searchTerm.toLowerCase();
+            const matchedSite = heritageSites.find(site =>
+                site.name.toLowerCase().includes(searchTerm) ||
+                site.description.toLowerCase().includes(searchTerm)
+            );
+
+            if (matchedSite) {
+                // Center map on the matched site and open popup
+                map.setView([matchedSite.latitude, matchedSite.longitude], 14);
+                L.popup()
+                    .setLatLng([matchedSite.latitude, matchedSite.longitude])
+                    .setContent(`<b>${matchedSite.name}</b><br>${matchedSite.description}`)
+                    .openOn(map);
+            } else {
+                alert("No matching heritage site found.");
+            }
+        }
+
+        // Attach event listener for search box
+        document.addEventListener('DOMContentLoaded', function () {
+            document.getElementById('search-box').addEventListener('input', function (event) {
+                const searchTerm = event.target.value;
+                performSearch(searchTerm);
+            });
+        });
 
         function addToFavourites(site) {
             const payload = {
@@ -311,6 +341,20 @@
                 routingControl = null;
             }
         }
+
+
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371; // Radius of the Earth in kilometers
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a =
+                Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(dLon / 2) * Math.sin(dLon / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            return R * c; // Distance in kilometers
+        }
+
 
         // Find nearest site function
         function findNearestSite() {
