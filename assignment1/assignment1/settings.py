@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'heritage_sites',
     'leaflet',
     'pwa', 
+    'rest_framework',
 ]
 
 # Middleware
